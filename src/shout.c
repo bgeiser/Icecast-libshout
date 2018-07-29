@@ -825,6 +825,9 @@ int shout_set_format(shout_t *self, unsigned int format)
         case SHOUT_FORMAT_WEBMAUDIO:
             return shout_set_content_format(self, SHOUT_FORMAT_WEBM, SHOUT_USAGE_AUDIO, NULL);
         break;
+        case SHOUT_FORMAT_AAC:
+            return shout_set_content_format(self, SHOUT_FORMAT_AAC, SHOUT_USAGE_AUDIO, NULL);
+        break;
     }
 
     return self->error = SHOUTERR_UNSUPPORTED;
@@ -908,6 +911,11 @@ static const char *shout_get_mimetype(unsigned int format, unsigned int usage, c
                 return "video/x-matroska-3d";
             } else if (is_video(usage)) {
                 return "video/x-matroska";
+            }
+        break;
+        case SHOUT_FORMAT_AAC:
+            if (is_audio(usage)) {
+                return "audio/aac";
             }
         break;
     }
@@ -1341,6 +1349,9 @@ static int try_connect(shout_t *self)
             case SHOUT_FORMAT_WEBM:
             case SHOUT_FORMAT_MATROSKA:
                 rc = self->error = shout_open_webm(self);
+                break;
+            case SHOUT_FORMAT_AAC:
+                rc = self->error = shout_open_aac(self);
                 break;
 
             default:
