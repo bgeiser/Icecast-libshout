@@ -81,7 +81,7 @@ int shout_open_aac(shout_t *self) {
         return SHOUTERR_MALLOC;
     self->format_data = aac_data;
 
-    memset(aac_data, 0, sizeof(aac_data));
+    memset(aac_data, 0, sizeof(*aac_data));
 
     aac_data->info = (faadAACInfo *) calloc(1, sizeof(faadAACInfo));
     aac_data->state = SEEK;
