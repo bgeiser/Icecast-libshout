@@ -804,6 +804,18 @@ unsigned int shout_get_public(shout_t *self)
     return self->public;
 }
 
+int shout_set_aac_fl(shout_t *self, unsigned int fl)
+{
+    if (!self)
+        return SHOUTERR_INSANE;
+    if (self->connection)
+        return self->error = SHOUTERR_CONNECTED;
+
+    self->aac_fl = fl;
+
+    return self->error = SHOUTERR_SUCCESS;
+}
+
 int shout_set_format(shout_t *self, unsigned int format)
 {
     if (!self)
@@ -827,6 +839,7 @@ int shout_set_format(shout_t *self, unsigned int format)
         break;
         case SHOUT_FORMAT_AAC:
         case SHOUT_FORMAT_AAC_LATMLOAS:
+        case SHOUT_FORMAT_AAC_USAC:
             return shout_set_content_format(self, format, SHOUT_USAGE_AUDIO, NULL);
         break;
     }
@@ -918,6 +931,11 @@ static const char *shout_get_mimetype(unsigned int format, unsigned int usage, c
         case SHOUT_FORMAT_AAC_LATMLOAS: // audio/mp4a or mp4a-latm? (see rfc3016)
             if (is_audio(usage)) {
                 return "audio/aac";
+            }
+        break;
+        case SHOUT_FORMAT_AAC_USAC:
+            if (is_audio(usage)) {
+                return "audio/usac";
             }
         break;
     }
@@ -1356,6 +1374,7 @@ static int try_connect(shout_t *self)
                 rc = self->error = shout_open_aac(self);
                 break;
             case SHOUT_FORMAT_AAC_LATMLOAS:
+            case SHOUT_FORMAT_AAC_USAC:
                 rc = self->error = shout_open_aac_latmloas(self);
                 break;
 

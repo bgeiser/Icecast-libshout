@@ -55,6 +55,7 @@ extern "C" {
 #define SHOUT_FORMAT_MATROSKA       (  4) /* Matroska */
 #define SHOUT_FORMAT_AAC            (  5) /* audio/aac (ADTS framing) */
 #define SHOUT_FORMAT_AAC_LATMLOAS   (  6) /* audio/aac (LATM/LOAS framing) */
+#define SHOUT_FORMAT_AAC_USAC       (  7) /* audio/usac (for xHE-AAC, aot 42) */
 
 /* backward-compatibility alias */
 #define SHOUT_FORMAT_VORBIS         SHOUT_FORMAT_OGG

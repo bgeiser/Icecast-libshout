@@ -21,7 +21,7 @@
 
 /*
  * AAC frame handling courtesy Arthur Taylor
- * AAC LATMLOAS frame handling courtesy Bernd Geiser
+ * AAC LATMLOAS and USAC frame handling courtesy Bernd Geiser
  */
 
 #include <stdlib.h>
@@ -140,11 +140,14 @@ static unsigned short getbits(unsigned char **stream, unsigned short *store, uns
         return (bits | (*store >> *nStored)) & BitMask[n];
 }
 
-static void read_header_data(aac_data_t *data) {
+static void read_header_data(aac_data_t *data, int aac_fl) {
         if(data->framing == ADTS)
                 {
                         int sr_idx = (data->buffer[2] & 0x3C) >> 2;
-                        data->frames_per_second = sample_rates[sr_idx] / 1024.f;
+                        if(aac_fl)
+                                data->frames_per_second = sample_rates[sr_idx] / (float)aac_fl;
+                        else
+                                data->frames_per_second = sample_rates[sr_idx] / 1024.f;
                         data->frame_length = ((((unsigned int) data->buffer[3] & 0x3)) << 11)
                                 | (((unsigned int) data->buffer[4]) << 3) | (data->buffer[5] >> 5);
                 }
@@ -171,7 +174,10 @@ static void read_header_data(aac_data_t *data) {
                                                 rate = ((unsigned int)getbits(&p, &store, &nStored, 16) << 8) | (unsigned int)getbits(&p, &store, &nStored, 8);
                                         else
                                                 rate = sample_rates[srIdx];
-                                        data->frames_per_second = (float)rate / 1024.f;
+                                        if(aac_fl)
+                                                data->frames_per_second = (float)rate / (float)aac_fl;
+                                        else
+                                                data->frames_per_second = (float)rate / 1024.;
                                 }
                 }
 }
@@ -223,7 +229,7 @@ static int process_local_buffer(shout_t *self, aac_data_t *data) {
                 if (!valid_header_bytes(data->buffer, data)) {
                         return SHOUTERR_SOCKET;
                 }
-                read_header_data(data);
+                read_header_data(data, self->aac_fl);
                 data->state = READ_FRAME;
                 return process_local_buffer(self, data);
         case READ_FRAME:

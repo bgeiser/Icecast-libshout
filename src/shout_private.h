@@ -262,6 +262,8 @@ struct shout {
     uint64_t senttime;
 
     int error;
+
+    int aac_fl;
 };
 
 /* helper functions */
