@@ -34,7 +34,7 @@ extern "C" {
 #endif
 
 #define SHOUTERR_SUCCESS            (  0) /* No error */
-#define SHOUTERR_INSANE             ( -1) /* Nonsensical arguments e.g. self being NULL */ 
+#define SHOUTERR_INSANE             ( -1) /* Nonsensical arguments e.g. self being NULL */
 #define SHOUTERR_NOCONNECT          ( -2) /* Couldn't connect */
 #define SHOUTERR_NOLOGIN            ( -3) /* Login failed */
 #define SHOUTERR_SOCKET             ( -4) /* Socket error */
@@ -53,6 +53,9 @@ extern "C" {
 #define SHOUT_FORMAT_WEBM           (  2) /* WebM */
 #define SHOUT_FORMAT_WEBMAUDIO      (  3) /* WebM, audio only, obsolete. Only used by shout_set_format() */
 #define SHOUT_FORMAT_MATROSKA       (  4) /* Matroska */
+#define SHOUT_FORMAT_AAC            (  5) /* audio/aac (ADTS framing) */
+#define SHOUT_FORMAT_AAC_LATMLOAS   (  6) /* audio/aac (LATM/LOAS framing) */
+#define SHOUT_FORMAT_AAC_USAC       (  7) /* audio/usac (for xHE-AAC, aot 42) */
 
 /* backward-compatibility alias */
 #define SHOUT_FORMAT_VORBIS         SHOUT_FORMAT_OGG
@@ -227,6 +230,8 @@ const char *shout_get_meta(shout_t *self, const char *name);
 int shout_set_public(shout_t *self, unsigned int make_public);
 unsigned int shout_get_public(shout_t *self);
 
+int shout_set_aac_fl(shout_t *self, unsigned int fl);
+
 /* takes a SHOUT_FORMAT_xxxx argument */
 int shout_set_format(shout_t *self, unsigned int format); // obsolete
 unsigned int shout_get_format(shout_t *self); // obsolete
@@ -258,7 +263,7 @@ int shout_close(shout_t *self);
 int shout_send(shout_t *self, const unsigned char *data, size_t len);
 
 /* Send unparsed data to the server.  Do not use this unless you know
- * what you are doing. 
+ * what you are doing.
  * Returns the number of bytes written, or < 0 on error.
  */
 ssize_t shout_send_raw(shout_t *self, const unsigned char *data, size_t len);
@@ -266,7 +271,7 @@ ssize_t shout_send_raw(shout_t *self, const unsigned char *data, size_t len);
 /* return the number of bytes currently on the write queue (only makes sense in
  * nonblocking mode). */
 ssize_t shout_queuelen(shout_t *self);
-  
+
 /* Puts caller to sleep until it is time to send more data to the server */
 void shout_sync(shout_t *self);
 

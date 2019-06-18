@@ -262,6 +262,8 @@ struct shout {
     uint64_t senttime;
 
     int error;
+
+    int aac_fl;
 };
 
 /* helper functions */
@@ -323,9 +325,11 @@ extern const shout_protocol_impl_t *shout_roaraudio_impl;
 shout_connection_return_state_t shout_get_xaudiocast_response(shout_t *self, shout_connection_t *connection);
 shout_connection_return_state_t shout_parse_xaudiocast_response(shout_t *self, shout_connection_t *connection);
 
-/* containsers */
+/* containers */
 int shout_open_ogg(shout_t *self);
 int shout_open_mp3(shout_t *self);
 int shout_open_webm(shout_t *self);
+int shout_open_aac(shout_t *self);
+int shout_open_aac_latmloas(shout_t *self);
 
 #endif /* __LIBSHOUT_SHOUT_PRIVATE_H__ */

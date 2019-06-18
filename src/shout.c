@@ -134,6 +134,8 @@ shout_t *shout_new(void)
     self->usage     = LIBSHOUT_DEFAULT_USAGE;
     self->protocol  = LIBSHOUT_DEFAULT_PROTOCOL;
 
+    self->aac_fl    = 0;
+
     return self;
 }
 
@@ -804,6 +806,18 @@ unsigned int shout_get_public(shout_t *self)
     return self->public;
 }
 
+int shout_set_aac_fl(shout_t *self, unsigned int fl)
+{
+    if (!self)
+        return SHOUTERR_INSANE;
+    if (self->connection)
+        return self->error = SHOUTERR_CONNECTED;
+
+    self->aac_fl = fl;
+
+    return self->error = SHOUTERR_SUCCESS;
+}
+
 int shout_set_format(shout_t *self, unsigned int format)
 {
     if (!self)
@@ -824,6 +838,11 @@ int shout_set_format(shout_t *self, unsigned int format)
         break;
         case SHOUT_FORMAT_WEBMAUDIO:
             return shout_set_content_format(self, SHOUT_FORMAT_WEBM, SHOUT_USAGE_AUDIO, NULL);
+        break;
+        case SHOUT_FORMAT_AAC:
+        case SHOUT_FORMAT_AAC_LATMLOAS:
+        case SHOUT_FORMAT_AAC_USAC:
+            return shout_set_content_format(self, format, SHOUT_USAGE_AUDIO, NULL);
         break;
     }
 
@@ -908,6 +927,17 @@ static const char *shout_get_mimetype(unsigned int format, unsigned int usage, c
                 return "video/x-matroska-3d";
             } else if (is_video(usage)) {
                 return "video/x-matroska";
+            }
+        break;
+        case SHOUT_FORMAT_AAC:
+        case SHOUT_FORMAT_AAC_LATMLOAS: // audio/mp4a or mp4a-latm? (see rfc3016)
+            if (is_audio(usage)) {
+                return "audio/aac";
+            }
+        break;
+        case SHOUT_FORMAT_AAC_USAC:
+            if (is_audio(usage)) {
+                return "audio/usac";
             }
         break;
     }
@@ -1241,6 +1271,7 @@ int shout_control(shout_t *self, shout_control_t control, ...)
 
     return self->error = ret;
 }
+
 int shout_set_callback(shout_t *self, shout_callback_t callback, void *userdata)
 {
     if (!self)
@@ -1341,6 +1372,13 @@ static int try_connect(shout_t *self)
             case SHOUT_FORMAT_WEBM:
             case SHOUT_FORMAT_MATROSKA:
                 rc = self->error = shout_open_webm(self);
+                break;
+            case SHOUT_FORMAT_AAC:
+                rc = self->error = shout_open_aac(self);
+                break;
+            case SHOUT_FORMAT_AAC_LATMLOAS:
+            case SHOUT_FORMAT_AAC_USAC:
+                rc = self->error = shout_open_aac_latmloas(self);
                 break;
 
             default:
