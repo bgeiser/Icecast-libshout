@@ -67,6 +67,7 @@ shout_connection_t *shout_connection_new(shout_t *self, const shout_protocol_imp
     con->impl = impl;
     con->plan = plan;
     con->error = SHOUTERR_SUCCESS;
+    con->nonblocking = -1;
 
     return con;
 }
@@ -563,7 +564,8 @@ int                 shout_connection_connect(shout_connection_t *con, shout_t *s
     if (con->socket != SOCK_ERROR || con->current_socket_state != SHOUT_SOCKSTATE_UNCONNECTED)
         return SHOUTERR_BUSY;
 
-    shout_connection_set_nonblocking(con, shout_get_nonblocking(shout));
+    if(con->nonblocking == -1)
+        shout_connection_set_nonblocking(con, shout_get_nonblocking(shout));
 
     port = shout->port;
     if (shout_get_protocol(shout) == SHOUT_PROTOCOL_ICY)
