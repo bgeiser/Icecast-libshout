@@ -153,6 +153,7 @@ static void read_header_data(aac_data_t *data, int aac_fl) {
                 }
         else if(data->framing == LATMLOAS)
                 {
+                        unsigned int i;
                         unsigned char *p = &data->buffer[0];
                         unsigned short store = *p++;
                         unsigned short nStored = 8;

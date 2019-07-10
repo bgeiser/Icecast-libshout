@@ -2,7 +2,7 @@
 /* queue.c: Implementation data queue logic.
  *
  *  Copyright (C) 2002-2004 the Icecast team <team@icecast.org>,
- *  Copyright (C) 2012-2019 Philipp "ph3-der-loewe" Schafft <lion@lion.leolix.org>
+ *  Copyright (C) 2012-2015 Philipp "ph3-der-loewe" Schafft <lion@lion.leolix.org>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -38,12 +38,12 @@ int shout_queue_data(shout_queue_t *queue, const unsigned char *data, size_t len
     shout_buf_t *buf;
     size_t       plen;
 
-    if (!len)
+	if (!len)
         return SHOUTERR_SUCCESS;
 
     if (!queue->len) {
         queue->head = calloc(1, sizeof(shout_buf_t));
-        if (!queue->head)
+		if (!queue->head)
             return SHOUTERR_MALLOC;
     }
 
@@ -55,7 +55,7 @@ int shout_queue_data(shout_queue_t *queue, const unsigned char *data, size_t len
     while (len > 0) {
         if (buf->len == SHOUT_BUFSIZE) {
             buf->next = calloc(1, sizeof(shout_buf_t));
-            if (!buf->next)
+			if (!buf->next)
                 return SHOUTERR_MALLOC;
             buf->next->prev = buf;
             buf = buf->next;
@@ -71,19 +71,18 @@ int shout_queue_data(shout_queue_t *queue, const unsigned char *data, size_t len
     return SHOUTERR_SUCCESS;
 }
 
-int shout_queue_str(shout_connection_t *self, const char *str)
+int shout_queue_str(shout_t *self, const char *str)
 {
     return shout_queue_data(&self->wqueue, (const unsigned char*)str, strlen(str));
 }
 
 /* this should be shared with sock_write. Create libicecommon. */
-int shout_queue_printf(shout_connection_t *self, const char *fmt, ...)
+int shout_queue_printf(shout_t *self, const char *fmt, ...)
 {
     char        buffer[1024];
     char       *buf;
     va_list     ap, ap_retry;
     int         len;
-    int         ret = SHOUTERR_SUCCESS;
 
     buf = buffer;
 
@@ -92,8 +91,9 @@ int shout_queue_printf(shout_connection_t *self, const char *fmt, ...)
 
     len = vsnprintf(buf, sizeof(buffer), fmt, ap);
 
+    self->error = SHOUTERR_SUCCESS;
     if (len > 0) {
-        if ((size_t)len < sizeof(buffer)) {
+		if ((size_t)len < sizeof(buffer)) {
             shout_queue_data(&self->wqueue, (unsigned char*)buf, len);
         } else {
             buf = malloc(++len);
@@ -101,8 +101,8 @@ int shout_queue_printf(shout_connection_t *self, const char *fmt, ...)
                 len = vsnprintf(buf, len, fmt, ap_retry);
                 shout_queue_data(&self->wqueue, (unsigned char*)buf, len);
                 free(buf);
-            } else {
-                ret = SHOUTERR_MALLOC;
+			} else {
+                self->error = SHOUTERR_MALLOC;
             }
         }
     }
@@ -110,7 +110,7 @@ int shout_queue_printf(shout_connection_t *self, const char *fmt, ...)
     va_end(ap_retry);
     va_end(ap);
 
-    return ret;
+    return self->error;
 }
 
 void shout_queue_free(shout_queue_t *queue)
@@ -135,7 +135,7 @@ ssize_t shout_queue_collect(shout_buf_t *queue, char **buf)
     for (node = queue; node; node = node->next)
         len += node->len;
 
-    if (!(*buf = malloc(len)))
+	if (!(*buf = malloc(len)))
         return SHOUTERR_MALLOC;
 
     for (node = queue; node; node = node->next) {

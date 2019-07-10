@@ -3,7 +3,7 @@
 
 m4_define(libshout_major, 2)
 m4_define(libshout_minor, 4)
-m4_define(libshout_micro, 3)
+m4_define(libshout_micro, 1)
 m4_define(libshout_version, libshout_major.libshout_minor.libshout_micro)
 
 AC_INIT([libshout], libshout_version, [icecast-dev@xiph.org])
@@ -75,7 +75,6 @@ dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_TIME
 AC_CHECK_HEADERS([strings.h sys/timeb.h arpa/inet.h])
-AC_CHECK_HEADERS([stdarg.h], [SHOUT_STDARG=1], [AC_MSG_ERROR([required header <stdarg.h> not found])])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -84,15 +83,9 @@ XIPH_C99_INTTYPES
 
 dnl Checks for library functions.
 AC_CHECK_FUNCS([gettimeofday ftime])
-AC_CHECK_FUNCS([strcasestr])
 AC_SEARCH_LIBS([nanosleep], [rt],
   [AC_DEFINE([HAVE_NANOSLEEP], [1],
     [Define if you have the nanosleep function])])
-
-dnl Allow examples not to be build
-AC_ARG_ENABLE([examples],
-  AC_HELP_STRING([--disable-examples],[Do not build example code]))
-AM_CONDITIONAL([HAVE_EXAMPLES],[test "${enable_examples}" != "no"])
 
 dnl Module checks
 XIPH_NET
@@ -197,7 +190,6 @@ XIPH_PATH_OPENSSL([
     XIPH_VAR_APPEND([XIPH_CPPFLAGS],[$OPENSSL_CFLAGS])
     XIPH_VAR_APPEND([XIPH_LDFLAGS],[$OPENSSL_LDFLAGS])
     XIPH_VAR_PREPEND([XIPH_LIBS],[$OPENSSL_LIBS])
-    SHOUT_REQUIRES="$SHOUT_REQUIRES, libssl"
     SHOUT_TLS="1"
     ],
     [ AC_MSG_NOTICE([SSL disabled!])
