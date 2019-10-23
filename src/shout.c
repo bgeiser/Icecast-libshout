@@ -419,7 +419,7 @@ int shout_set_metadata(shout_t *self, shout_metadata_t *metadata)
 #ifdef HAVE_OPENSSL
     shout_connection_select_tlsmode(connection, self->tls_mode);
 #endif
-    shout_connection_set_nonblocking(connection, 0);
+    shout_connection_set_nonblocking(connection, SHOUT_BLOCKING_FULL);
 
     connection->target_message_state = SHOUT_MSGSTATE_PARSED_FINAL;
 
@@ -1019,7 +1019,10 @@ unsigned int shout_get_protocol(shout_t *self)
 
 int shout_set_nonblocking(shout_t *self, unsigned int nonblocking)
 {
-    if (!self || (nonblocking != 0 && nonblocking != 1))
+    if (nonblocking == SHOUT_BLOCKING_DEFAULT)
+        nonblocking = SHOUT_BLOCKING_FULL;
+
+    if (!self || (nonblocking != SHOUT_BLOCKING_FULL && nonblocking != SHOUT_BLOCKING_NONE))
         return SHOUTERR_INSANE;
 
     if (self->connection)
