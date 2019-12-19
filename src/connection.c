@@ -67,7 +67,7 @@ shout_connection_t *shout_connection_new(shout_t *self, const shout_protocol_imp
     con->impl = impl;
     con->plan = plan;
     con->error = SHOUTERR_SUCCESS;
-    con->nonblocking = -1;
+    con->nonblocking = SHOUT_BLOCKING_DEFAULT;
 
     return con;
 }
