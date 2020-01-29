@@ -515,7 +515,7 @@ int shout_get_connected(shout_t *self)
     if (self->connection && self->connection->current_message_state == SHOUT_MSGSTATE_SENDING1)
         return SHOUTERR_CONNECTED;
     if (self->connection && self->connection->current_message_state != SHOUT_MSGSTATE_SENDING1) {
-        if ((rc = try_connect(self)) == SHOUTERR_SUCCESS)
+        if ((self->error = rc = try_connect(self)) == SHOUTERR_SUCCESS)
             return SHOUTERR_CONNECTED;
         return rc;
     }
