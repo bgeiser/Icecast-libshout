@@ -255,6 +255,9 @@ int shout_get_content_format(shout_t *self, unsigned int *format, unsigned int *
 int shout_set_protocol(shout_t *self, unsigned int protocol);
 unsigned int shout_get_protocol(shout_t *self);
 
+/* set HTTP keepalive (for http protocol only) */
+int shout_set_keepalive(shout_t *self, unsigned int keepalive);
+
 /* Instructs libshout to use nonblocking I/O. Must be called before
  * shout_open (no switching back and forth midstream at the moment).
  * nonblocking is one of SHOUT_BLOCKING_xxx. */

@@ -253,6 +253,8 @@ struct shout {
     int error;
 
     int aac_fl;
+
+    int request_keepalive;
 };
 
 /* helper functions */

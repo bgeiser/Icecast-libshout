@@ -136,6 +136,8 @@ shout_t *shout_new(void)
 
     self->aac_fl    = 0;
 
+    self->request_keepalive = 1;
+
     return self;
 }
 
@@ -1062,6 +1064,19 @@ unsigned int shout_get_protocol(shout_t *self)
         return 0;
 
     return self->protocol;
+}
+
+
+int shout_set_keepalive(shout_t *self, unsigned int keepalive)
+{
+    if (!self)
+        return SHOUTERR_INSANE;
+    if (self->connection)
+        return self->error = SHOUTERR_CONNECTED;
+
+    self->request_keepalive = keepalive;
+
+    return self->error = SHOUTERR_SUCCESS;
 }
 
 int shout_set_nonblocking(shout_t *self, unsigned int nonblocking)
