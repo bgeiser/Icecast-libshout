@@ -522,22 +522,29 @@ static shout_connection_return_state_t shout_parse_http_response(shout_t *self, 
         retcode = httpp_getvar(parser, HTTPP_VAR_ERROR_CODE);
         code = atoi(retcode);
 
+        if(self->request_keepalive)
+                {
 #ifdef HAVE_STRCASESTR
-        tmp = httpp_getvar(parser, HTTPP_VAR_VERSION);
-        if (tmp && strcmp(tmp, "1.1") == 0) {
-            can_reuse = 1;
-        }
-        tmp = httpp_getvar(parser, "connection");
-        if (tmp && strcasestr(tmp, "keep-alive")) {
-            can_reuse = 1;
-        }
-        if (tmp && strcasestr(tmp, "close")) {
-            can_reuse = 0;
-        }
+                        tmp = httpp_getvar(parser, HTTPP_VAR_VERSION);
+                        if (tmp && strcmp(tmp, "1.1") == 0) {
+                                can_reuse = 1;
+                        }
+                        tmp = httpp_getvar(parser, "connection");
+                        if (tmp && strcasestr(tmp, "keep-alive")) {
+                                can_reuse = 1;
+                        }
+                        if (tmp && strcasestr(tmp, "close")) {
+                                can_reuse = 0;
+                        }
 #else
-        /* get a real OS */
-        can_reuse = 0;
+                        /* get a real OS */
+                        can_reuse = 0;
 #endif
+                }
+        else
+                {
+                        can_reuse = 0;
+                }
 
         if ((code == 100 || (code >= 200 && code < 300)) && connection->current_protocol_state == STATE_SOURCE) {
             httpp_destroy(parser);
