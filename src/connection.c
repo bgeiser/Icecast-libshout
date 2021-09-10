@@ -448,7 +448,10 @@ int                 shout_connection_iter(shout_connection_t *con, shout_t *shou
         return SHOUTERR_INSANE;
 
     if (con->socket == SOCK_ERROR)
-        return SHOUTERR_NOCONNECT;
+        {
+            shout_connection_set_error(con, SHOUTERR_NOCONNECT);
+            return SHOUTERR_NOCONNECT;
+        }
 
 
 #define __iter(what) \
@@ -574,7 +577,7 @@ int                 shout_connection_connect(shout_connection_t *con, shout_t *s
     if (con->nonblocking == SHOUT_BLOCKING_NONE) {
         con->socket = sock_connect_non_blocking(shout->host, port);
     } else {
-        con->socket = sock_connect(shout->host, port);
+        con->socket = sock_connect_wto(shout->host, port, 3);
     }
 
     if (con->socket < 0) {
