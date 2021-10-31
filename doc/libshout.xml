@@ -537,35 +537,6 @@
                     Returns the protocol used to connect to the server.
                 </para>
 
-                <funcsynopsis id="shout_set_format">
-                    <funcprototype>
-                        <funcdef>int <function>shout_set_format</function></funcdef>
-                        <paramdef><type>shout_t</type> *<parameter>self</parameter></paramdef>
-                        <paramdef>int <parameter>format</parameter></paramdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>
-                    Sets the audio format of this stream. The currently supported formats
-                    are listed in <link linkend="format_constants">Format Constants</link>.
-                    The default is <constant>SHOUT_FORMAT_OGG</constant>.
-                </para>
-                <warning>This function has been obsoleted and may not be included in future versions of the library.
-                    Please use <link linkend="shout_set_content_format"><function>shout_set_content_format</function></link>
-                </warning>
-
-                <funcsynopsis id="shout_get_format">
-                    <funcprototype>
-                        <funcdef>int <function>shout_get_format</function></funcdef>
-                        <paramdef><type>shout_t</type> *<parameter>self</parameter></paramdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>
-                    Returns the audio format used by this stream.
-                </para>
-                <warning>This function has been obsoleted and may not be included in future versions of the library.
-                    Please use <link linkend="shout_get_content_format"><function>shout_get_content_format</function></link>
-                </warning>
-
 
                 <funcsynopsis id="shout_set_content_format">
                     <funcprototype>
@@ -632,29 +603,6 @@
                 </funcsynopsis>
                 <para>
                     Returns the stream mount point.
-                </para>
-
-                <funcsynopsis id="shout_set_dumpfile">
-                    <funcprototype>
-                        <funcdef>int <function>shout_set_dumpfile</function></funcdef>
-                        <paramdef><type>shout_t</type> *<parameter>self</parameter></paramdef>
-                        <paramdef>const char *<parameter>dumpfile</parameter></paramdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>
-                    If the server supports it, you can request that your stream be archived
-                    on the server under the name <varname>dumpfile</varname>. This can quickly
-                    eat a lot of disk space, so think twice before setting it.
-                </para>
-
-                <funcsynopsis id="shout_get_dumpfile">
-                    <funcprototype>
-                        <funcdef>const char *<function>shout_get_dumpfile</function></funcdef>
-                        <paramdef><type>shout_t</type> *<parameter>self</parameter></paramdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>
-                    Returns the dump file, if specified.
                 </para>
 
                 <funcsynopsis id="shout_set_agent">
@@ -1093,6 +1041,58 @@
                 <para>
                     Returns the stream description.
                 </para>
+
+                <funcsynopsis id="shout_set_dumpfile">
+                    <funcprototype>
+                        <funcdef>int <function>shout_set_dumpfile</function></funcdef>
+                        <paramdef><type>shout_t</type> *<parameter>self</parameter></paramdef>
+                        <paramdef>const char *<parameter>dumpfile</parameter></paramdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>
+                    If the server supports it, you can request that your stream be archived
+                    on the server under the name <varname>dumpfile</varname>. This can quickly
+                    eat a lot of disk space, so think twice before setting it.
+                </para>
+
+                <funcsynopsis id="shout_get_dumpfile">
+                    <funcprototype>
+                        <funcdef>const char *<function>shout_get_dumpfile</function></funcdef>
+                        <paramdef><type>shout_t</type> *<parameter>self</parameter></paramdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>
+                    Returns the dump file, if specified.
+                </para>
+
+                <funcsynopsis id="shout_set_format">
+                    <funcprototype>
+                        <funcdef>int <function>shout_set_format</function></funcdef>
+                        <paramdef><type>shout_t</type> *<parameter>self</parameter></paramdef>
+                        <paramdef>int <parameter>format</parameter></paramdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>
+                    Sets the audio format of this stream. The currently supported formats
+                    are listed in <link linkend="format_constants">Format Constants</link>.
+                    The default is <constant>SHOUT_FORMAT_OGG</constant>.
+                </para>
+                <warning>This function has been obsoleted and may not be included in future versions of the library.
+                    Please use <link linkend="shout_set_content_format"><function>shout_set_content_format</function></link>
+                </warning>
+
+                <funcsynopsis id="shout_get_format">
+                    <funcprototype>
+                        <funcdef>int <function>shout_get_format</function></funcdef>
+                        <paramdef><type>shout_t</type> *<parameter>self</parameter></paramdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>
+                    Returns the audio format used by this stream.
+                </para>
+                <warning>This function has been obsoleted and may not be included in future versions of the library.
+                    Please use <link linkend="shout_get_content_format"><function>shout_get_content_format</function></link>
+                </warning>
 
             </section>
 
