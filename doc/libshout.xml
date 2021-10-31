@@ -414,7 +414,7 @@
                     </funcprototype>
                 </funcsynopsis>
                 <para>
-                    Sets non-blocking mode. The default is <constant>0</constant>.
+                    Sets non-blocking mode. The default is <constant>SHOUT_BLOCKING_FULL</constant>.
                 </para>
 
                 <funcsynopsis id="shout_get_nonblocking">
@@ -424,7 +424,7 @@
                     </funcprototype>
                 </funcsynopsis>
                 <para>
-                    Returns non-blocking mode or <constant>0</constant> in case of error.
+                    Returns non-blocking mode or <constant>SHOUT_BLOCKING_FULL</constant> in case of error.
                 </para>
 
                 <funcsynopsis id="shout_set_host">
@@ -1197,6 +1197,23 @@
                 <varlistentry>
                     <term><constant>SHOUTERR_RETRY</constant></term>
                     <listitem>The caller should retry this call later.</listitem>
+                </varlistentry>
+            </variablelist>
+
+            <variablelist id="blocking_constants"><title>Blocking</title>
+                <varlistentry>
+                    <term><constant>SHOUT_BLOCKING_DEFAULT</constant></term>
+                    <listitem>Selects the default blocking mode.</listitem>
+                </varlistentry>
+
+                <varlistentry>
+                    <term><constant>SHOUT_BLOCKING_FULL</constant></term>
+                    <listitem>The API is in full blocking mode.</listitem>
+                </varlistentry>
+
+                <varlistentry>
+                    <term><constant>SHOUT_BLOCKING_NONE</constant></term>
+                    <listitem>The API will not block.</listitem>
                 </varlistentry>
             </variablelist>
 
