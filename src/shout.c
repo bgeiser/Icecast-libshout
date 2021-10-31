@@ -1053,7 +1053,7 @@ int shout_set_nonblocking(shout_t *self, unsigned int nonblocking)
 unsigned int shout_get_nonblocking(shout_t *self)
 {
     if (!self)
-        return 0;
+        return SHOUT_BLOCKING_FULL;
 
     return self->nonblocking;
 }
