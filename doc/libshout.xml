@@ -839,8 +839,8 @@
 
             <section><title>Metadata</title>
                 <para>
-                    These functions currently only make sense for MP3 streams. Vorbis streams are expected
-                    to embed metadata as vorbis comments in the audio stream.
+                    These functions are only valid for MP3 streams. All other formats are expected
+                    to embed metadata inline according to their own specification.
                 </para>
 
                 <funcsynopsis id="shout_metadata_new">
