@@ -146,9 +146,6 @@ void shout_free(shout_t *self)
     if (!self)
         return;
 
-    if (!self->connection)
-        return;
-
     if (self->host)
         free(self->host);
     if (self->password)
