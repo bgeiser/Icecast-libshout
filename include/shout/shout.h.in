@@ -105,6 +105,8 @@ extern "C" {
 #define SHOUT_META_IRC              "irc"
 #define SHOUT_META_AIM              "aim"
 #define SHOUT_META_ICQ              "icq"
+#define SHOUT_META_BR               "br"
+#define SHOUT_META_SAMPLERATE       "samplerate"
 
 #define SHOUT_CALLBACK_PASS         (  1) /* Pass the event to the next handler */
 
