@@ -105,7 +105,7 @@ int                 shout_connection_unref(shout_connection_t *con)
 static struct timeval shout_connection_iter__wait_for_io__get_timeout(shout_connection_t *con, shout_t *shout, uint64_t timeout)
 {
     static const struct timeval tv_blocking = {
-        .tv_sec = 8,
+        .tv_sec = 2,
         .tv_usec = 0
     };
     static const struct timeval tv_nonblocking = {
