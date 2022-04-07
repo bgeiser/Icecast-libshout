@@ -26,6 +26,7 @@
 #endif
 
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -306,7 +307,7 @@ int shout_metadata_add(shout_metadata_t *self, const char *name, const char *val
     return _shout_util_dict_set(self, name, value);
 }
 
-int shout_set_metadata(shout_t *self, shout_metadata_t *metadata)
+static int shout_set_metadata_impl(shout_t *self, shout_metadata_t *metadata, bool is_utf8)
 {
     shout_connection_t *connection;
     shout_http_plan_t plan;
@@ -360,7 +361,11 @@ int shout_set_metadata(shout_t *self, shout_metadata_t *metadata)
                 return self->error = SHOUTERR_MALLOC;
             }
 
-            param_template = "mode=updinfo&mount=%s&%s";
+            if (is_utf8) {
+                param_template = "mode=updinfo&charset=UTF-8&mount=%s&%s";
+            } else {
+                param_template = "mode=updinfo&mount=%s&%s";
+            }
             param_len = strlen(param_template) + strlen(encvalue) + 1 + strlen(encmount);
             param = malloc(param_len);
             if (!param) {
@@ -441,6 +446,16 @@ int shout_set_metadata(shout_t *self, shout_metadata_t *metadata)
     } else {
         return error;
     }
+}
+
+int shout_set_metadata(shout_t *self, shout_metadata_t *metadata)
+{
+    return shout_set_metadata_impl(self, metadata, false);
+}
+
+int shout_set_metadata_utf8(shout_t *self, shout_metadata_t *metadata)
+{
+    return shout_set_metadata_impl(self, metadata, true);
 }
 
 /* getters/setters */

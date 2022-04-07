@@ -310,15 +310,13 @@ int shout_delay(shout_t *self) SHOUT_ATTR_F_WARN_UNUSED_RESULT;
 /* Functions in this block are for use with MP3, and AAC streams only */
 
 /* Sets MP3 metadata.
- * Returns:
- *   SHOUTERR_SUCCESS
- *   SHOUTERR_UNSUPPORTED if format isn't MP3
- *   SHOUTERR_MALLOC
- *   SHOUTERR_INSANE
- *   SHOUTERR_NOCONNECT
- *   SHOUTERR_SOCKET
+ * Returns one of SHOUTERR_XXX.
+ *
+ * Note: This function is for MP3 streams only.
+ *
+ * The metadata passed must have been added as UTF-8 using shout_metadata_add().
  */
-int shout_set_metadata(shout_t *self, shout_metadata_t *metadata) SHOUT_ATTR_F_WARN_UNUSED_RESULT;
+int shout_set_metadata_utf8(shout_t *self, shout_metadata_t *metadata) SHOUT_ATTR_F_WARN_UNUSED_RESULT;
 
 /* Allocates a new metadata structure.  Must be freed by shout_metadata_free. */
 shout_metadata_t *shout_metadata_new(void) SHOUT_ATTR_F_WARN_UNUSED_RESULT;
@@ -364,6 +362,8 @@ unsigned int shout_get_format(shout_t *self) SHOUT_ATTR_F_WARN_UNUSED_RESULT SHO
 
 int shout_set_dumpfile(shout_t *self, const char *dumpfile) SHOUT_ATTR_F_DEPRECATED("Only useful with SHOUT_PROTOCOL_XAUDIOCAST which is deprecated."); // obsolete
 const char *shout_get_dumpfile(shout_t *self) SHOUT_ATTR_F_WARN_UNUSED_RESULT SHOUT_ATTR_F_DEPRECATED("Only useful with SHOUT_PROTOCOL_XAUDIOCAST which is deprecated."); // obsolete
+
+int shout_set_metadata(shout_t *self, shout_metadata_t *metadata) SHOUT_ATTR_F_WARN_UNUSED_RESULT SHOUT_ATTR_F_DEPRECATED("Use shout_set_metadata_utf8()");
 
 #ifdef __cplusplus
 }
