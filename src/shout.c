@@ -695,6 +695,12 @@ static const char *shout_get_mimetype(unsigned int format, unsigned int usage, c
                 return "video/x-matroska";
             }
         break;
+
+        case SHOUT_FORMAT_TEXT:
+            if (usage == SHOUT_USAGE_TEXT) {
+                return "text/plain; charset=utf-8";
+            }
+        break;
     }
 
     return NULL;
@@ -1131,6 +1137,9 @@ static int try_connect(shout_t *self)
             case SHOUT_FORMAT_WEBM:
             case SHOUT_FORMAT_MATROSKA:
                 rc = self->error = shout_open_webm(self);
+                break;
+            case SHOUT_FORMAT_TEXT:
+                rc = self->error = shout_open_text(self);
                 break;
 
             default:
