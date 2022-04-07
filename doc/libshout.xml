@@ -899,18 +899,18 @@
                     </varlistentry>
                 </variablelist>
 
-                <funcsynopsis id="shout_set_metadata">
+                <funcsynopsis id="shout_set_metadata_utf8">
                     <funcprototype>
-                        <funcdef>int <function>shout_set_metadata</function></funcdef>
+                        <funcdef>int <function>shout_set_metadata_utf8</function></funcdef>
                         <paramdef><type>shout_t</type> *<parameter>self</parameter></paramdef>
                         <paramdef><type>shout_metadata_t</type> *<parameter>metadata</parameter></paramdef>
                     </funcprototype>
                 </funcsynopsis>
                 <para>
                     Sets metadata on the connection <varname>self</varname> to <varname>metadata</varname>.
-                    Only MP3 streams support this type of metadata update. You may use this function
-                    on defined but closed connections (this is useful if you simply want to set the
-                    metadata for a stream provided by another process).
+                    Only MP3 streams support this type of metadata update.
+                    The data as added via <link linkend="shout_metadata_add"><function>shout_metadata_add</function></link>
+                    must be encoded in utf-8.
                 </para>
 
                 <variablelist><title>Return Values</title>
@@ -952,7 +952,7 @@
 
             </section>
 
-            <section><title>Obsolate metadata Interface</title>
+            <section><title>Obsolate Interface</title>
                 <warning>
                     All those functions have been replaced by <function>shout_set_meta</function> and
                     <function>shout_get_meta</function>. They may be removed by newer versions of this library.
@@ -1095,6 +1095,18 @@
                     Please use <link linkend="shout_get_content_format"><function>shout_get_content_format</function></link>
                 </warning>
 
+                <funcsynopsis id="shout_set_metadata">
+                    <funcprototype>
+                        <funcdef>int <function>shout_set_metadata</function></funcdef>
+                        <paramdef><type>shout_t</type> *<parameter>self</parameter></paramdef>
+                        <paramdef><type>shout_metadata_t</type> *<parameter>metadata</parameter></paramdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>
+                    Sets metadata on the connection <varname>self</varname> to <varname>metadata</varname>.
+                    Only MP3 streams support this type of metadata update.
+                    Please use <link linkend="shout_set_metadata_utf8"><function>shout_set_metadata_utf8</function></link>
+                </para>
             </section>
 
         </section>
