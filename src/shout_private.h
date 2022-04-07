@@ -255,6 +255,7 @@ struct shout {
 
 /* helper functions */
 const char *shout_get_mimetype_from_self(shout_t *self);
+int shout_cb_connection_callback(shout_connection_t *con, shout_event_t event, void *userdata, va_list ap);
 
 int     shout_queue_data(shout_queue_t *queue, const unsigned char *data, size_t len);
 int     shout_queue_str(shout_connection_t *self, const char *str);

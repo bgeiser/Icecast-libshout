@@ -33,7 +33,7 @@ noinst_HEADERS = format_ogg.h shout_private.h util.h
 PROTOCOLS=proto_http.c proto_xaudiocast.c proto_icy.c proto_roaraudio.c
 FORMATS=format_ogg.c format_webm.c format_mp3.c
 CODECS=codec_opus.c $(MAYBE_VORBIS) $(MAYBE_THEORA) $(MAYBE_SPEEX)
-libshout_la_SOURCES = shout.c util.c queue.c connection.c $(PROTOCOLS) $(FORMATS) $(CODECS) $(MAYBE_TLS)
+libshout_la_SOURCES = shout.c legacy.c icy.c util.c queue.c connection.c $(PROTOCOLS) $(FORMATS) $(CODECS) $(MAYBE_TLS)
 AM_CFLAGS = @XIPH_CFLAGS@
 AM_CPPFLAGS = -I$(top_builddir)/include -I$(srcdir)/common @XIPH_CPPFLAGS@
 

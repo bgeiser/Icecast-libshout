@@ -2,7 +2,7 @@
 /* shout.c: Implementation of public libshout interface shout.h
  *
  *  Copyright (C) 2002-2004 the Icecast team <team@icecast.org>,
- *  Copyright (C) 2012-2019 Philipp "ph3-der-loewe" Schafft <lion@lion.leolix.org>
+ *  Copyright (C) 2012-2022 Philipp Schafft <lion@lion.leolix.org>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -26,7 +26,6 @@
 #endif
 
 #include <stdarg.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,7 +52,6 @@
 #endif
 
 /* -- local prototypes -- */
-static int shout_cb_connection_callback(shout_connection_t *con, shout_event_t event, void *userdata, va_list ap);
 static int try_connect(shout_t *self);
 
 /* -- static data -- */
@@ -286,178 +284,6 @@ int shout_delay(shout_t *self)
     return self->senttime / 1000 - (timing_get_time() - self->starttime);
 }
 
-shout_metadata_t *shout_metadata_new(void)
-{
-    return _shout_util_dict_new();
-}
-
-void shout_metadata_free(shout_metadata_t *self)
-{
-    if (!self)
-        return;
-
-    _shout_util_dict_free(self);
-}
-
-int shout_metadata_add(shout_metadata_t *self, const char *name, const char *value)
-{
-    if (!self || !name)
-        return SHOUTERR_INSANE;
-
-    return _shout_util_dict_set(self, name, value);
-}
-
-static int shout_set_metadata_impl(shout_t *self, shout_metadata_t *metadata, bool is_utf8)
-{
-    shout_connection_t *connection;
-    shout_http_plan_t plan;
-    size_t param_len;
-    char *param = NULL;
-    char *encvalue;
-    char *encpassword;
-    char *encmount;
-    const char *param_template;
-    int ret;
-    int error;
-
-    if (!self || !metadata)
-        return SHOUTERR_INSANE;
-
-    encvalue = _shout_util_dict_urlencode(metadata, '&');
-    if (!encvalue)
-        return self->error = SHOUTERR_MALLOC;
-
-    memset(&plan, 0, sizeof(plan));
-
-    plan.is_source = 0;
-
-    switch (self->protocol) {
-        case SHOUT_PROTOCOL_ICY:
-            if (!(encpassword = _shout_util_url_encode(self->password))) {
-                free(encvalue);
-                return self->error = SHOUTERR_MALLOC;
-            }
-
-            param_template = "mode=updinfo&pass=%s&%s";
-            param_len = strlen(param_template) + strlen(encvalue) + 1 + strlen(encpassword);
-            param = malloc(param_len);
-            if (!param) {
-                free(encpassword);
-                free(encvalue);
-                return self->error = SHOUTERR_MALLOC;
-            }
-            snprintf(param, param_len, param_template, encpassword, encvalue);
-            free(encpassword);
-
-            plan.param = param;
-            plan.fake_ua = 1;
-            plan.auth = 0;
-            plan.method = "GET";
-            plan.resource = "/admin.cgi";
-        break;
-        case SHOUT_PROTOCOL_HTTP:
-            if (!(encmount = _shout_util_url_encode(self->mount))) {
-                free(encvalue);
-                return self->error = SHOUTERR_MALLOC;
-            }
-
-            if (is_utf8) {
-                param_template = "mode=updinfo&charset=UTF-8&mount=%s&%s";
-            } else {
-                param_template = "mode=updinfo&mount=%s&%s";
-            }
-            param_len = strlen(param_template) + strlen(encvalue) + 1 + strlen(encmount);
-            param = malloc(param_len);
-            if (!param) {
-                free(encmount);
-                free(encvalue);
-                return self->error = SHOUTERR_MALLOC;
-            }
-            snprintf(param, param_len, param_template, encmount, encvalue);
-            free(encmount);
-
-            plan.param = param;
-            plan.auth = 1;
-            plan.resource = "/admin/metadata";
-        break;
-        case SHOUT_PROTOCOL_XAUDIOCAST:
-            if (!(encmount = _shout_util_url_encode(self->mount))) {
-                free(encvalue);
-                return self->error = SHOUTERR_MALLOC;
-            }
-            if (!(encpassword = _shout_util_url_encode(self->password))) {
-                free(encmount);
-                free(encvalue);
-                return self->error = SHOUTERR_MALLOC;
-            }
-
-            param_template = "mode=updinfo&pass=%s&mount=%s&%s";
-            param_len = strlen(param_template) + strlen(encvalue) + 1 + strlen(encpassword) + strlen(self->mount);
-            param = malloc(param_len);
-            if (!param) {
-                free(encpassword);
-                free(encmount);
-                free(encvalue);
-                return self->error = SHOUTERR_MALLOC;
-            }
-            snprintf(param, param_len, param_template, encpassword, encmount, encvalue);
-            free(encpassword);
-            free(encmount);
-
-            plan.param = param;
-            plan.auth = 0;
-            plan.method = "GET";
-            plan.resource = "/admin.cgi";
-        break;
-        default:
-            free(encvalue);
-            return self->error = SHOUTERR_UNSUPPORTED;
-        break;
-    }
-
-    free(encvalue);
-
-    connection = shout_connection_new(self, shout_http_impl, &plan);
-    if (!connection) {
-        free(param);
-        return self->error = SHOUTERR_MALLOC;
-    }
-
-    shout_connection_set_callback(self->connection, shout_cb_connection_callback, self);
-
-#ifdef HAVE_OPENSSL
-    shout_connection_select_tlsmode(connection, self->tls_mode);
-#endif
-    shout_connection_set_nonblocking(connection, SHOUT_BLOCKING_FULL);
-
-    connection->target_message_state = SHOUT_MSGSTATE_PARSED_FINAL;
-
-    shout_connection_connect(connection, self);
-
-    ret = shout_connection_iter(connection, self);
-    error = shout_connection_get_error(connection);
-
-    shout_connection_unref(connection);
-
-    free(param);
-
-    if (ret == 0) {
-        return SHOUTERR_SUCCESS;
-    } else {
-        return error;
-    }
-}
-
-int shout_set_metadata(shout_t *self, shout_metadata_t *metadata)
-{
-    return shout_set_metadata_impl(self, metadata, false);
-}
-
-int shout_set_metadata_utf8(shout_t *self, shout_metadata_t *metadata)
-{
-    return shout_set_metadata_impl(self, metadata, true);
-}
-
 /* getters/setters */
 const char *shout_version(int *major, int *minor, int *patch)
 {
@@ -640,36 +466,6 @@ const char *shout_get_mount(shout_t *self)
     return self->mount;
 }
 
-int shout_set_name(shout_t *self, const char *name)
-{
-    return shout_set_meta(self, "name", name);
-}
-
-const char *shout_get_name(shout_t *self)
-{
-    return shout_get_meta(self, "name");
-}
-
-int shout_set_url(shout_t *self, const char *url)
-{
-    return shout_set_meta(self, "url", url);
-}
-
-const char *shout_get_url(shout_t *self)
-{
-    return shout_get_meta(self, "url");
-}
-
-int shout_set_genre(shout_t *self, const char *genre)
-{
-    return shout_set_meta(self, "genre", genre);
-}
-
-const char *shout_get_genre(shout_t *self)
-{
-    return shout_get_meta(self, "genre");
-}
-
 int shout_set_agent(shout_t *self, const char *agent)
 {
     if (!self)
@@ -762,41 +558,6 @@ const char *shout_get_user(shout_t *self)
     return self->user;
 }
 
-int shout_set_description(shout_t *self, const char *description)
-{
-    return shout_set_meta(self, "description", description);
-}
-
-const char *shout_get_description(shout_t *self)
-{
-    return shout_get_meta(self, "description");
-}
-
-int shout_set_dumpfile(shout_t *self, const char *dumpfile)
-{
-    if (!self)
-        return SHOUTERR_INSANE;
-
-    if (self->connection)
-        return SHOUTERR_CONNECTED;
-
-    if (self->dumpfile)
-        free(self->dumpfile);
-
-    if ( !(self->dumpfile = _shout_util_strdup(dumpfile)) )
-        return self->error = SHOUTERR_MALLOC;
-
-    return self->error = SHOUTERR_SUCCESS;
-}
-
-const char *shout_get_dumpfile(shout_t *self)
-{
-    if (!self)
-        return NULL;
-
-    return self->dumpfile;
-}
-
 int shout_set_audio_info(shout_t *self, const char *name, const char *value)
 {
     if (!self)
@@ -864,44 +625,6 @@ unsigned int shout_get_public(shout_t *self)
         return 0;
 
     return self->public;
-}
-
-int shout_set_format(shout_t *self, unsigned int format)
-{
-    if (!self)
-        return SHOUTERR_INSANE;
-
-    if (self->connection)
-        return self->error = SHOUTERR_CONNECTED;
-
-    switch (format) {
-        case SHOUT_FORMAT_OGG:
-            return shout_set_content_format(self, SHOUT_FORMAT_OGG, SHOUT_USAGE_UNKNOWN, NULL);
-        break;
-        case SHOUT_FORMAT_MP3:
-            return shout_set_content_format(self, SHOUT_FORMAT_MP3, SHOUT_USAGE_AUDIO, NULL);
-        break;
-        case SHOUT_FORMAT_WEBM:
-            return shout_set_content_format(self, SHOUT_FORMAT_WEBM, SHOUT_USAGE_AUDIO|SHOUT_USAGE_VISUAL, NULL);
-        break;
-        case SHOUT_FORMAT_WEBMAUDIO:
-            return shout_set_content_format(self, SHOUT_FORMAT_WEBM, SHOUT_USAGE_AUDIO, NULL);
-        break;
-    }
-
-    return self->error = SHOUTERR_UNSUPPORTED;
-}
-
-unsigned int shout_get_format(shout_t* self)
-{
-    if (!self)
-        return 0;
-
-    if (self->format == SHOUT_FORMAT_WEBM && self->usage == SHOUT_USAGE_AUDIO) {
-        return SHOUT_FORMAT_WEBMAUDIO;
-    }
-
-    return self->format;
 }
 
 static inline unsigned int remove_bits(unsigned int value, unsigned int to_remove)
@@ -1333,7 +1056,7 @@ static int shout_call_callback(shout_t *self, shout_event_t event, ...)
 
     return ret;
 }
-static int shout_cb_connection_callback(shout_connection_t *con, shout_event_t event, void *userdata, va_list ap)
+int shout_cb_connection_callback(shout_connection_t *con, shout_event_t event, void *userdata, va_list ap)
 {
     shout_t *self = userdata;
 
