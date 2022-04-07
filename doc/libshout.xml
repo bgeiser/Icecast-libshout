@@ -837,11 +837,12 @@
 
             </section>
 
-            <section><title>Metadata</title>
+            <section><title>ICY Metadata</title>
                 <para>
                     These functions are only valid for MP3 streams. All other formats are expected
                     to embed metadata inline according to their own specification.
                 </para>
+                <warning>The functions in this section are only valid for MP3 streams.</warning>
 
                 <funcsynopsis id="shout_metadata_new">
                     <funcprototype>
