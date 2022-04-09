@@ -1,0 +1,198 @@
+stages:
+  - build
+  - test
+  - sanitizer
+  - packaging
+
+default:
+  image: registry.gitlab.xiph.org/xiph/icecast-docker-images/debian-bullseye:20220409191534
+  tags:
+    - docker
+
+variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+    NAME_OF_UNTRACKED_ARCHIVE: gitlab-#2457-artifacts.tar.gz
+
+# Templates
+
+.TemplateBuildGeneral:
+  stage: build
+  artifacts:
+    paths:
+      - "config.log"
+      - "gitlab-#2457-artifacts.tar.gz"
+    expire_in: 1 hour
+  after_script:
+    - ( git submodule foreach --quiet 'git ls-files -o 2>&1 | xargs -n1 -iIII echo $path/III'; git ls-files -o ) | xargs tar cfvz $NAME_OF_UNTRACKED_ARCHIVE
+
+.TemplateAlpine:
+  image: registry.gitlab.xiph.org/xiph/icecast-docker-images/alpine-3.15:20220409224442
+  before_script:
+    - set -xe
+    - apk update
+    - cat /etc/os*
+    - apk add musl-dev git make gcc automake autoconf libtool libogg-dev libvorbis-dev speex-dev openssl-dev libtheora-dev
+    - apk add libc6-compat
+      # gzip required because busybox gzip does not understand best / zip for make dist
+    - apk add gzip zip tar
+      # required for uploading package to gitlab registry
+    - apk add curl ca-certificates
+      # Required for tests
+      #- apk add curl ffmpeg
+      # Create user to run tests
+      #- adduser -s /bin/sh -D -H icecast
+
+# Builds
+
+Build (x86_64):
+  extends: .TemplateBuildGeneral
+  script:
+    - gcc --version
+    - ./autogen.sh
+    - ./configure || { cat config.log; exit 1; }
+    - make
+
+Build Alpine (x86_64):
+  extends:
+    - .TemplateBuildGeneral
+    - .TemplateAlpine
+  stage: build
+  script:
+    - gcc --version
+    - ./autogen.sh
+    - ./configure || { cat config.log; exit 1; }
+    - make
+
+Build (x86):
+  extends: .TemplateBuildGeneral
+  variables:
+    CFLAGS: -m32
+    LDFLAGS: -m32
+  script:
+    - gcc --version
+    - ./autogen.sh
+    - ./configure || { cat config.log; exit 1; }
+    - make
+
+Build (clang, x86_64):
+  extends: .TemplateBuildGeneral
+  variables:
+    CC: clang
+  script:
+    - clang --version
+    - ./autogen.sh
+    - ./configure || { cat config.log; exit 1; }
+    - make
+
+# Sanitizer builds
+
+Sanitizer:
+  extends: .TemplateBuildGeneral
+  stage: sanitizer
+  parallel:
+    matrix:
+      - SANITIZER: [address, thread, undefined]
+        CC: [clang, gcc]
+      - SANITIZER: [memory, integer]
+        CC: [clang]
+  script:
+    - ${CC} --version
+    - ./autogen.sh
+    - ./configure --with-sanitizer=${SANITIZER} || { cat config.log; exit 1; }
+    - make check || { find ./tests -name '*.log' -print -exec cat "{}" \;; cat test-suite.log; exit 1; }
+  # this statement needs to be there to disable copying of dependecies from other stage jobs - otherwhise you get funny errors - https://stackoverflow.com/a/47679028
+  dependencies: []
+
+# Build and run tests
+
+Test (x86_64):
+  stage: test
+  script:
+    - tar xfvz $NAME_OF_UNTRACKED_ARCHIVE
+    - make check || { cat test-suite.log; exit 1; }
+  needs:
+    - 'Build (x86_64)'
+  artifacts:
+    paths:
+      - "test-suite.log"
+    expire_in: 1 hour
+
+Test Alpine (x86_64):
+  extends: .TemplateAlpine
+  stage: test
+  script:
+    - tar xfvz $NAME_OF_UNTRACKED_ARCHIVE
+    - make check || { cat test-suite.log; exit 1; }
+  needs:
+    - 'Build Alpine (x86_64)'
+  artifacts:
+    paths:
+      - "test-suite.log"
+    expire_in: 1 hour
+
+Test (x86):
+  stage: test
+  variables:
+    CFLAGS: -m32
+    LDFLAGS: -m32
+  script:
+    - tar xfvz $NAME_OF_UNTRACKED_ARCHIVE
+    - make check || { cat test-suite.log; exit 1; }
+  needs:
+    - 'Build (x86)'
+  artifacts:
+    paths:
+      - "test-suite.log"
+    expire_in: 1 hour
+
+Test (clang, x86_64):
+  stage: test
+  variables:
+    CFLAGS: -m32
+  script:
+    - tar xfvz $NAME_OF_UNTRACKED_ARCHIVE
+    - make check || { cat test-suite.log; exit 1; }
+  needs:
+    - 'Build (clang, x86_64)'
+  artifacts:
+    paths:
+      - "test-suite.log"
+    expire_in: 1 hour
+
+# Distcheck / Source tarballs
+
+Distcheck:
+  stage: test
+  script:
+    - tar xfvz $NAME_OF_UNTRACKED_ARCHIVE
+    - make distcheck
+  artifacts:
+    paths:
+      - libshout-*.tar.gz
+      - libshout-*.zip
+    expire_in: 1 week
+  needs:
+    - 'Build (x86_64)'
+
+Package Alpine (x86_64):
+  extends: .TemplateAlpine
+  stage: packaging
+  variables:
+    PACKAGE_PREFIX: "alpine-libshout-bins"
+    PACKAGE_VERSION: "0.91"
+  script:
+    - tar xfvz $NAME_OF_UNTRACKED_ARCHIVE
+    - mkdir _install_base
+    - make install DESTDIR=`pwd`/_install_base/
+    - cd _install_base/
+    - tar -cvzf ../$PACKAGE_PREFIX-$CI_COMMIT_REF_NAME.tar.gz *
+    - cd ..
+    # needs curl 7.76 - alpine 3.15 has 7.80
+    - 'curl --fail-with-body --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file $PACKAGE_PREFIX-$CI_COMMIT_REF_NAME.tar.gz "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/$PACKAGE_PREFIX/$PACKAGE_VERSION-$CI_COMMIT_REF_NAME/$PACKAGE_PREFIX-$CI_COMMIT_REF_NAME.tar.gz"'
+  when: manual
+  needs:
+    # we need the build job artifacts
+    - job: 'Build Alpine (x86_64)'
+      artifacts: true
+    # we depend on tests for ordering
+    - 'Test Alpine (x86_64)'
