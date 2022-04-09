@@ -216,7 +216,7 @@ static inline int tls_check_cert(shout_tls_t *tls)
     int cert_ok = 0;
     int ret;
 
-    if (tls->cert_error != SHOUTERR_RETRY)
+    if (tls->cert_error != SHOUTERR_RETRY && tls->cert_error != SHOUTERR_BUSY)
         return tls->cert_error;
 
     if (!cert)
