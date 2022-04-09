@@ -64,7 +64,7 @@ extern "C" {
 #define SHOUTERR_CONNECTED          ( -7) /* Cannot set parameter while connected */
 #define SHOUTERR_UNCONNECTED        ( -8) /* Not connected */
 #define SHOUTERR_UNSUPPORTED        ( -9) /* This libshout doesn't support the requested option */
-#define SHOUTERR_BUSY               (-10) /* Socket is busy */
+#define SHOUTERR_BUSY               (-10) /* Resource is busy, try again (later) */
 #define SHOUTERR_NOTLS              (-11) /* TLS requested but not supported by peer */
 #define SHOUTERR_TLSBADCERT         (-12) /* TLS connection can not be established because of bad certificate */
 #define SHOUTERR_RETRY              (-13) /* Retry last operation. */

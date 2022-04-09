@@ -325,7 +325,7 @@ const char *shout_get_error(shout_t *self)
     case SHOUTERR_UNCONNECTED:
         return "Not connected";
     case SHOUTERR_BUSY:
-        return "Socket is busy";
+        return "Resource is busy";
     case SHOUTERR_UNSUPPORTED:
         return "This libshout doesn't support the requested option";
     case SHOUTERR_NOTLS:
