@@ -225,8 +225,12 @@ int shout_send(shout_t *self, const unsigned char *data, size_t len)
     if (self->starttime <= 0)
         self->starttime = timing_get_time();
 
-    if (!len)
-        return shout_connection_iter(self->connection, self);
+    if (!len) {
+        int ret = shout_connection_iter(self->connection, self);
+        if (ret == SHOUTERR_RETRY)
+            return SHOUTERR_BUSY;
+        return ret;
+    }
 
     return self->send(self, data, len);
 }
@@ -1123,6 +1127,8 @@ static int try_connect(shout_t *self)
     }
 
     ret = shout_connection_iter(self->connection, self);
+    if (ret == SHOUTERR_RETRY)
+        ret = SHOUTERR_BUSY;
     self->error = ret;
 
     if (self->connection->current_message_state == SHOUT_MSGSTATE_SENDING1 && !self->send) {
