@@ -63,7 +63,6 @@ static int shout_set_metadata_impl(shout_t *self, shout_metadata_t *metadata, bo
     char *encmount;
     const char *param_template;
     int ret;
-    int error;
 
     if (!self || !metadata)
         return SHOUTERR_INSANE;
@@ -179,18 +178,15 @@ static int shout_set_metadata_impl(shout_t *self, shout_metadata_t *metadata, bo
 
     shout_connection_connect(connection, self);
 
-    ret = shout_connection_iter(connection, self);
-    error = shout_connection_get_error(connection);
+    do {
+        ret = shout_connection_iter(connection, self);
+    } while (ret == SHOUTERR_RETRY || ret == SHOUTERR_BUSY);
 
     shout_connection_unref(connection);
 
     free(param);
 
-    if (ret == 0) {
-        return SHOUTERR_SUCCESS;
-    } else {
-        return error;
-    }
+    return ret;
 }
 
 int shout_set_metadata(shout_t *self, shout_metadata_t *metadata)
