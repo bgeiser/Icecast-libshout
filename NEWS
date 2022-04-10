@@ -13,7 +13,8 @@ libshout 2.4.6 (202204??)
 * Added support for plain text streaming
 * Fixed shout_set_metadata*() sometimes returning SHOUTERR_RETRY (#2328)
 * Workaround old clients by emulating SHOUTERR_RETRY with SHOUTERR_BUSY (#2316)
-* emove our re-implementation of X509_check_host()
+* Remove our re-implementation of X509_check_host()
+* Allow to disable building tools (#2331)
 
 libshout 2.4.5 (20201219)
 
