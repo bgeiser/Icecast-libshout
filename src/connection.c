@@ -34,6 +34,9 @@
 #   include <sys/types.h>
 #   include <unistd.h>
 #endif
+#ifdef HAVE_POLL
+#include <poll.h>
+#endif
 
 #include <shout/shout.h>
 #include "shout_private.h"
@@ -126,6 +129,28 @@ static struct timeval shout_connection_iter__wait_for_io__get_timeout(shout_conn
     }
 }
 
+#ifdef HAVE_POLL
+static shout_connection_return_state_t shout_connection_iter__wait_for_io(shout_connection_t *con, shout_t *shout, int for_read, int for_write, uint64_t timeout)
+{
+    struct timeval tv = shout_connection_iter__wait_for_io__get_timeout(con, shout, timeout);
+    struct pollfd check;
+
+    check.fd = con->socket;
+    check.events = (for_read ? POLLIN : 0) | (for_write ? POLLOUT : 0);
+    switch (poll (&check, 1, tv.tv_sec*1000 + tv.tv_usec / 1000)) {
+    case -1:
+        shout_connection_set_error(con, SHOUTERR_SOCKET);
+        return SHOUT_RS_ERROR;
+    case 0:
+        shout_connection_set_error(con, SHOUTERR_RETRY);
+        return SHOUT_RS_TIMEOUT;
+    default:
+        return SHOUT_RS_DONE;
+    }
+}
+
+#else
+
 static shout_connection_return_state_t shout_connection_iter__wait_for_io(shout_connection_t *con, shout_t *shout, int for_read, int for_write, uint64_t timeout)
 {
     struct timeval tv = shout_connection_iter__wait_for_io__get_timeout(con, shout, timeout);
@@ -153,6 +178,7 @@ static shout_connection_return_state_t shout_connection_iter__wait_for_io(shout_
         return SHOUT_RS_ERROR;
     }
 }
+#endif
 
 static shout_connection_return_state_t shout_connection_iter__socket(shout_connection_t *con, shout_t *shout)
 {
