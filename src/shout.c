@@ -726,6 +726,7 @@ static const char *shout_get_mimetype(unsigned int format, unsigned int usage, c
         case SHOUT_FORMAT_AAC_USAC:
             if (is_audio(usage)) {
                 return "audio/usac";
+            }
     }
 
     return NULL;
@@ -1200,3 +1201,4 @@ static int try_connect(shout_t *self)
 
     return ret;
 }
+
