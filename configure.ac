@@ -3,7 +3,7 @@
 
 m4_define(libshout_major, 2)
 m4_define(libshout_minor, 4)
-m4_define(libshout_micro, 5)
+m4_define(libshout_micro, 6)
 m4_define(libshout_version, libshout_major.libshout_minor.libshout_micro)
 
 AC_INIT([libshout], libshout_version, [icecast-dev@xiph.org])
@@ -99,6 +99,11 @@ dnl Allow examples not to be build
 AC_ARG_ENABLE([examples],
   AS_HELP_STRING([--disable-examples],[Do not build example code]))
 AM_CONDITIONAL([HAVE_EXAMPLES],[test "${enable_examples}" != "no"])
+
+dnl Allow tools not to be build
+AC_ARG_ENABLE([tools],
+  AS_HELP_STRING([--disable-tools],[Do not build tools]))
+AM_CONDITIONAL([HAVE_TOOLS],[test "${enable_tools}" != "no"])
 
 dnl Module checks
 XIPH_NET
