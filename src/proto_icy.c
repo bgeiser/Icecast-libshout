@@ -44,8 +44,10 @@ static int shout_create_icy_request_real(shout_t *self, shout_connection_t *conn
     int         ret;
 
     bitrate = shout_get_audio_info(self, SHOUT_AI_BITRATE);
-	if (!bitrate)
-        bitrate = "0";
+    if (!bitrate)
+            bitrate = shout_get_meta(self, "bitrate");
+    if (!bitrate)
+            bitrate = "0";
 
     ret = SHOUTERR_MALLOC;
     do {
