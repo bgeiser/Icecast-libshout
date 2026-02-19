@@ -471,6 +471,7 @@ int                 shout_connection_iter(shout_connection_t *con, shout_t *shou
 {
     int found;
     int retry;
+    int nRetriesLeft = 10;
 
     if (!con || !shout)
         return SHOUTERR_INSANE;
@@ -508,6 +509,8 @@ int                 shout_connection_iter(shout_connection_t *con, shout_t *shou
         __iter(socket)
         __iter(message)
         __iter(protocol)
+        if(!nRetriesLeft--)
+            return SHOUTERR_NOCONNECT;
     } while (found || retry);
 
     return SHOUTERR_SUCCESS;
