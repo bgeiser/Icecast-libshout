@@ -228,6 +228,10 @@ static shout_connection_return_state_t shout_create_http_request_generic(shout_t
             if (shout_queue_printf(connection, "Connection: Upgrade\r\nUpgrade: %s\r\n", upgrade))
                 break;
         }
+        else if(self->request_keepalive)
+            if (shout_queue_str(connection, "Connection: Keep-Alive\r\n"))
+                break;
+
 
         if (param && is_post) {
             if (shout_queue_printf(connection, "Content-Type: application/x-www-form-urlencoded\r\nContent-Length: %llu\r\n", (long long unsigned int)strlen(param)))
